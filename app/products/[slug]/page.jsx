@@ -162,6 +162,7 @@ export default function ProductPage({ params }) {
                 alt={p.title}
                 badge={p.badge}
                 model3d={params.slug === "plgear" ? "/plgear-3d.html" : undefined}
+                model3dLink={params.slug === "plgear" ? "https://plgear-3d-interactive-tool-voice.vercel.app/" : undefined}
               />
             </Reveal>
 

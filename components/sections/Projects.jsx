@@ -10,11 +10,11 @@ import { Reveal } from "@/components/Primitives";
  * The track scrolls on its own (JS rAF, not scroll-bound); holding it pauses
  * the drift and follows the pointer left/right, releasing flings it with
  * momentum, then it resumes. The loop is seamless in both directions.
+ *
+ * Each card is a self-branded project image (the name is on the image itself);
+ * a small sector chip is overlaid in the corner.
  */
 export default function Projects() {
-  // Duplicate the set once so the loop is seamless: translating by exactly one
-  // base set lands the copy where the original began. Each card owns its
-  // trailing gap via margin so the seam has no half-gap jump.
   const loop = [...projects, ...projects];
   const vpRef = useRef(null);
   const trackRef = useRef(null);
@@ -25,7 +25,7 @@ export default function Projects() {
     if (!vp || !track) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    let baseWidth = track.scrollWidth / 2; // two identical halves
+    let baseWidth = track.scrollWidth / 2;
     const measure = () => { baseWidth = track.scrollWidth / 2; };
     const ro = new ResizeObserver(measure);
     ro.observe(track);
@@ -35,10 +35,9 @@ export default function Projects() {
     let hovering = false;
     let lastX = 0;
     let lastMoveT = 0;
-    let velocity = 0; // px/s, for fling momentum
-    const SPEED = reduce ? 0 : 42; // auto-scroll px/s
+    let velocity = 0;
+    const SPEED = reduce ? 0 : 42;
 
-    // keep offset within one base set so the loop is seamless either direction
     const wrap = () => {
       if (baseWidth > 0) {
         offset = (((offset % baseWidth) + baseWidth) % baseWidth) - baseWidth;
@@ -55,13 +54,13 @@ export default function Projects() {
       if (lastT == null) { lastT = t; apply(); return; }
       const dt = Math.min(0.05, (t - lastT) / 1000);
       lastT = t;
-      if (dragging) return; // pointer drives the position
+      if (dragging) return;
       if (Math.abs(velocity) > 4) {
-        offset += velocity * dt;            // glide after release
-        velocity *= Math.pow(0.92, dt * 60); // frame-rate-independent friction
+        offset += velocity * dt;
+        velocity *= Math.pow(0.92, dt * 60);
       } else {
         velocity = 0;
-        if (!hovering) offset -= SPEED * dt; // gentle auto-drift
+        if (!hovering) offset -= SPEED * dt;
       }
       wrap();
       apply();
@@ -92,7 +91,6 @@ export default function Projects() {
       if (!dragging) return;
       dragging = false;
       vp.style.cursor = "grab";
-      // stale flick → don't fling
       if (performance.now() - lastMoveT > 90) velocity = 0;
       if (e && e.pointerId != null) { try { vp.releasePointerCapture(e.pointerId); } catch {} }
     };
@@ -130,8 +128,8 @@ export default function Projects() {
               Power that built <span className="text-orange">landmarks.</span>
             </h2>
             <p className="pj-lead">
-              From hospitals to mega-developments, our boards energise the
-              places that shape Egypt.
+              From hospitals and ports to mega-developments, our boards energise
+              the places that shape Egypt.
             </p>
           </div>
         </Reveal>
@@ -146,15 +144,12 @@ export default function Projects() {
                     src={p.img}
                     alt={p.name}
                     fill
-                    sizes="(max-width: 900px) 78vw, 25rem"
+                    sizes="(max-width: 900px) 86vw, 30rem"
                     style={{ objectFit: "cover" }}
                     draggable={false}
                     onError={(e) => { e.currentTarget.style.display = "none"; }}
                   />
-                  <span className="pj-card-veil" />
-                  <span className="pj-dot" />
-                  <span className="pj-type">{p.type}</span>
-                  <h3 className="pj-name" dir="auto">{p.name}</h3>
+                  {p.type && <span className="pj-type">{p.type}</span>}
                 </article>
               ))}
             </div>
@@ -197,22 +192,9 @@ export default function Projects() {
         .pj-marquee {
           overflow: hidden;
           cursor: grab;
-          /* horizontal gestures drag the strip; vertical still scrolls the page */
           touch-action: pan-y;
-          -webkit-mask-image: linear-gradient(
-            90deg,
-            transparent,
-            #000 6%,
-            #000 94%,
-            transparent
-          );
-          mask-image: linear-gradient(
-            90deg,
-            transparent,
-            #000 6%,
-            #000 94%,
-            transparent
-          );
+          -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
         }
         .pj-marquee:active {
           cursor: grabbing;
@@ -223,95 +205,73 @@ export default function Projects() {
           will-change: transform;
           user-select: none;
         }
-        /* next/image can't receive styled-jsx's scope class → target :global(). */
         :global(.pj-card-img) {
           -webkit-user-drag: none;
           user-select: none;
         }
 
+        /* self-branded 16:9 image cards */
         .pj-card {
           flex: 0 0 auto;
-          margin-right: clamp(1.5rem, 3vw, 3rem);
-          width: clamp(17.5rem, 30vw, 25rem);
-          height: clamp(18.75rem, 42vh, 26.875rem);
+          margin-right: clamp(1.4rem, 2.6vw, 2.4rem);
+          width: clamp(21rem, 38vw, 31rem);
+          aspect-ratio: 16 / 9;
           position: relative;
           border: 1px solid var(--line);
-          border-radius: 18px;
+          border-radius: 16px;
           overflow: hidden;
-          background: linear-gradient(160deg, #0d0d0f 0%, #090909 100%);
-          padding: clamp(1.6rem, 2.6vw, 2.4rem);
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          transition: border-color 0.4s ease, transform 0.5s var(--ease);
+          background: #0b0b0d;
+          transition: border-color 0.4s ease, transform 0.5s var(--ease), box-shadow 0.5s ease;
         }
         .pj-card:hover {
-          border-color: rgba(232, 114, 42, 0.45);
+          border-color: rgba(232, 114, 42, 0.5);
           transform: translateY(-6px);
+          box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
         }
-        /* fill sets position/size/object-fit inline; these add the base zoom +
-           layering that styled-jsx scoping can't reach. */
         :global(.pj-card-img) {
           z-index: 0;
-          transform: scale(1.04);
+          transform: scale(1.02);
           transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .pj-card:hover :global(.pj-card-img) {
-          transform: scale(1.1);
+          transform: scale(1.08);
         }
-        .pj-card-veil {
+        /* sector chip — top-left, clear of the image's own (bottom-left) name */
+        .pj-type {
           position: absolute;
-          inset: 0;
-          z-index: 1;
-          background: linear-gradient(
-            180deg,
-            rgba(5, 5, 6, 0.2) 0%,
-            rgba(5, 5, 6, 0.5) 45%,
-            rgba(5, 5, 6, 0.93) 100%
-          );
-        }
-        .pj-dot,
-        .pj-type,
-        .pj-name {
-          position: relative;
+          top: clamp(0.9rem, 1.8vw, 1.3rem);
+          left: clamp(0.9rem, 1.8vw, 1.3rem);
           z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.42rem 0.85rem;
+          font-size: 0.68rem;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          font-weight: 700;
+          color: var(--orange);
+          background: rgba(5, 5, 6, 0.6);
+          border: 1px solid rgba(232, 114, 42, 0.45);
+          border-radius: 99px;
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
         }
-        .pj-dot {
-          position: absolute;
-          top: clamp(1.4rem, 2.4vw, 2.2rem);
-          left: clamp(1.4rem, 2.4vw, 2.2rem);
-          width: 12px;
-          height: 12px;
+        .pj-type::before {
+          content: "";
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           background: var(--orange);
-          box-shadow: 0 0 14px var(--orange), 0 0 28px rgba(232, 114, 42, 0.5);
-        }
-        .pj-type {
-          font-size: 0.72rem;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: var(--orange);
-          margin-bottom: 0.5rem;
-        }
-        .pj-name {
-          font-family: var(--font-head);
-          font-weight: 800;
-          font-size: clamp(1.4rem, 2.4vw, 2.1rem);
-          line-height: 1.04;
-          text-transform: uppercase;
-          color: #fff;
+          box-shadow: 0 0 10px var(--orange);
         }
 
         @media (max-width: 900px) {
           .pj-card {
-            width: 78vw;
-            max-width: 340px;
-            height: 86vw;
-            max-height: 380px;
+            width: 86vw;
+            max-width: 32rem;
           }
         }
-        /* reduced-motion: JS sets auto-scroll speed to 0 (no drift), but the
-           strip stays a single row that the user can still grab and drag. */
       `}</style>
     </section>
   );

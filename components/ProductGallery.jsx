@@ -8,7 +8,7 @@ import Image from "next/image";
 // load). The product render is shown the whole time the viewer boots, and the
 // interactive model is only revealed once it has actually rendered — so there's
 // no blank "loading" screen.
-export default function ProductGallery({ images, alt, badge, model3d, model3dPoster }) {
+export default function ProductGallery({ images, alt, badge, model3d, model3dPoster, model3dLink }) {
   const imgs = images && images.length ? images : [];
   const items = model3d
     ? [{ kind: "3d", poster: model3dPoster || imgs[0] }, ...imgs.map((src) => ({ kind: "img", src }))]
@@ -94,6 +94,14 @@ export default function ProductGallery({ images, alt, badge, model3d, model3dPos
                   allow="fullscreen"
                 />
               )}
+              {model3dLink && (
+                <a className="full3d" href={model3dLink} target="_blank" rel="noopener noreferrer" aria-label="Open the full 3D tool in a new tab">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M7 17L17 7M9 7h8v8" />
+                  </svg>
+                  <span>Full tool</span>
+                </a>
+              )}
             </>
           ) : (
             <Image src={cur.src} alt={alt} fill sizes="(max-width:850px) 92vw, 46vw" style={{ objectFit: "contain" }} />
@@ -172,6 +180,33 @@ export default function ProductGallery({ images, alt, badge, model3d, model3dPos
         }
         .viewer.in {
           opacity: 1;
+        }
+        .full3d {
+          position: absolute;
+          bottom: 0.85rem;
+          right: 0.85rem;
+          z-index: 4;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.46rem 0.85rem;
+          font-family: var(--font-body);
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: #fff;
+          background: rgba(5, 5, 6, 0.72);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          border-radius: 99px;
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .full3d:hover {
+          color: var(--orange);
+          border-color: rgba(232, 114, 42, 0.6);
+          background: rgba(5, 5, 6, 0.88);
         }
         .frame {
           position: absolute;
