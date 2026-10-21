@@ -5,6 +5,7 @@ import { Reveal } from "@/components/Primitives";
 import ProductGallery from "@/components/ProductGallery";
 import ProjectsScale from "@/components/ProjectsScale";
 import CatalogButton from "@/components/CatalogButton";
+import PlgearExplorer from "@/components/PlgearExplorer";
 import { getCatalog } from "@/lib/catalogs";
 import { pcssProjects } from "@/lib/pcssProjects";
 import { pralProjects } from "@/lib/pralProjects";
@@ -194,6 +195,8 @@ export default function ProductPage({ params }) {
       </section>
 
       {scaleSections[params.slug] && <ProjectsScale {...scaleSections[params.slug]} />}
+
+      {params.slug === "plgear" && <PlgearExplorer />}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .pd { padding: clamp(8rem,18vh,11rem) 0 clamp(5rem,12vh,8rem); }
