@@ -46,7 +46,7 @@ export default function SupplierOfferingsPage() {
           _subject: `New supplier offering — ${data.company}`,
           _template: "table",
           // Deliver to info@ (URL) and also CC the procurement lead.
-          _cc: "mohamed.abdelbaset@powerline.com.eg",
+          _cc: "mohamed.abdelbaset@askpowerline.com",
           Name: data.name,
           Email: data.email,
           Phone: data.phone || "-",

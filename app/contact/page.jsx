@@ -51,7 +51,7 @@ export default function ContactPage() {
           _subject: `New sales request — ${data.name}`,
           _template: "table",
           // Deliver to info@ (URL) and also CC the sales lead.
-          _cc: "mohamed.yahia@powerline.com.eg",
+          _cc: "mohamed.yahia@askpowerline.com",
           Name: data.name,
           Company: data.company || "-",
           Email: data.email,
