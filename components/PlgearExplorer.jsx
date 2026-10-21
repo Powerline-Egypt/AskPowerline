@@ -9,7 +9,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // Lazy-mounted so it never slows the product page's initial load.
 const VIDEO_URL = "/plgear-tour.mp4";
 const POSTER_URL = "/img/plgear-tour-poster.webp";
-const EXPLORER_URL = "/plgear-explorer.html";
+// The full interactive tool (with voice) is deployed separately.
+const EXPLORER_URL = "https://plgear-3d-interactive-tool-voice.vercel.app/";
 
 const SPECS = [
   { k: "Rated voltage", v: "12 / 24 kV" },

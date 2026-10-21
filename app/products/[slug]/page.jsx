@@ -157,7 +157,12 @@ export default function ProductPage({ params }) {
 
           <div className="grid">
             <Reveal as="div">
-              <ProductGallery images={p.gallery || [p.img]} alt={p.title} badge={p.badge} />
+              <ProductGallery
+                images={p.gallery || [p.img]}
+                alt={p.title}
+                badge={p.badge}
+                model3d={params.slug === "plgear" ? "/plgear-3d.html" : undefined}
+              />
             </Reveal>
 
             <Reveal as="div" className="detail" delay={120}>
