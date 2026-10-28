@@ -4878,8 +4878,8 @@ three/build/three.module.js:
       try { if (st.controls) { st.controls.enabled = true; if ("enableDamping" in st.controls) st.controls.enableDamping = true; } } catch (e) {}
       if (!setup && psec) {
         setup = true;
-        try { if (st.renderer && st.renderer.setPixelRatio) st.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25)); } catch (e) {}
-        try { if (st.renderer && st.renderer.shadowMap) { st.renderer.shadowMap.enabled = false; st.renderer.shadowMap.autoUpdate = false; } } catch (e) {}
+        // Keep the tool's own render quality (pixelRatio 1.5, shadows + antialias
+        // on) so the gallery looks identical to the hosted explorer — don't cap it.
         try { window.dispatchEvent(new Event("resize")); } catch (e) {}
         (function loop() { try { st.invalidate && st.invalidate(); } catch (e) {} requestAnimationFrame(loop); })();
         try {

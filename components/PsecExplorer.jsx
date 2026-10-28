@@ -9,8 +9,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // Lazy-mounted so it never slows the product page's initial load.
 const VIDEO_URL = "/psec-tour.mp4";
 const POSTER_URL = "/img/psec-tour-poster.webp";
-// The full interactive tool (with voice) is deployed separately.
-const EXPLORER_URL = "https://plgear-3d-interactive-tool-voice.vercel.app/";
+// The full interactive tool, self-hosted so it opens straight on the PSEC product
+// (the hosted explorer reads no URL params and would open on PLGEAR).
+const EXPLORER_URL = "/psec-tool.html";
 
 const SPECS = [
   { k: "Rated voltage", v: "12 / 24 kV" },
