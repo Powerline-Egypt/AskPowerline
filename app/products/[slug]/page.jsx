@@ -6,6 +6,7 @@ import ProductGallery from "@/components/ProductGallery";
 import ProjectsScale from "@/components/ProjectsScale";
 import CatalogButton from "@/components/CatalogButton";
 import PlgearExplorer from "@/components/PlgearExplorer";
+import PsecExplorer from "@/components/PsecExplorer";
 import { getCatalog } from "@/lib/catalogs";
 import { pcssProjects } from "@/lib/pcssProjects";
 import { pralProjects } from "@/lib/pralProjects";
@@ -161,8 +162,8 @@ export default function ProductPage({ params }) {
                 images={p.gallery || [p.img]}
                 alt={p.title}
                 badge={p.badge}
-                model3d={params.slug === "plgear" ? "/plgear-3d.html" : undefined}
-                model3dLink={params.slug === "plgear" ? "https://plgear-3d-interactive-tool-voice.vercel.app/" : undefined}
+                model3d={params.slug === "plgear" ? "/plgear-3d.html" : params.slug === "psec" ? "/psec-3d.html" : undefined}
+                model3dLink={params.slug === "plgear" || params.slug === "psec" ? "https://plgear-3d-interactive-tool-voice.vercel.app/" : undefined}
               />
             </Reveal>
 
@@ -200,9 +201,11 @@ export default function ProductPage({ params }) {
         </div>
       </section>
 
-      {scaleSections[params.slug] && <ProjectsScale {...scaleSections[params.slug]} />}
-
       {params.slug === "plgear" && <PlgearExplorer />}
+
+      {params.slug === "psec" && <PsecExplorer />}
+
+      {scaleSections[params.slug] && <ProjectsScale {...scaleSections[params.slug]} />}
 
       <style dangerouslySetInnerHTML={{ __html: `
         .pd { padding: clamp(8rem,18vh,11rem) 0 clamp(5rem,12vh,8rem); }
