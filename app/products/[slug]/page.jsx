@@ -7,6 +7,7 @@ import ProjectsScale from "@/components/ProjectsScale";
 import CatalogButton from "@/components/CatalogButton";
 import PlgearExplorer from "@/components/PlgearExplorer";
 import PsecExplorer from "@/components/PsecExplorer";
+import PralExplorer from "@/components/PralExplorer";
 import { getCatalog } from "@/lib/catalogs";
 import { pcssProjects } from "@/lib/pcssProjects";
 import { pralProjects } from "@/lib/pralProjects";
@@ -162,8 +163,8 @@ export default function ProductPage({ params }) {
                 images={p.gallery || [p.img]}
                 alt={p.title}
                 badge={p.badge}
-                model3d={params.slug === "plgear" ? "/plgear-3d.html" : params.slug === "psec" ? "/psec-3d.html" : undefined}
-                model3dLink={params.slug === "plgear" ? "https://plgear-3d-interactive-tool-voice.vercel.app/" : params.slug === "psec" ? "/psec-tool.html" : undefined}
+                model3d={params.slug === "plgear" ? "/plgear-3d.html" : params.slug === "psec" ? "/psec-3d.html" : params.slug === "pral" ? "/pral-3d.html" : undefined}
+                model3dLink={params.slug === "plgear" ? "https://plgear-3d-interactive-tool-voice.vercel.app/" : params.slug === "psec" ? "/psec-tool.html" : params.slug === "pral" ? "/pral-tool.html" : undefined}
               />
             </Reveal>
 
@@ -204,6 +205,8 @@ export default function ProductPage({ params }) {
       {params.slug === "plgear" && <PlgearExplorer />}
 
       {params.slug === "psec" && <PsecExplorer />}
+
+      {params.slug === "pral" && <PralExplorer />}
 
       {scaleSections[params.slug] && <ProjectsScale {...scaleSections[params.slug]} />}
 
