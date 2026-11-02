@@ -3,7 +3,7 @@
 // Premium, presentation-ready analytics UI for /admin/analytics.
 // This is a CLIENT component (Recharts needs the DOM). It receives already
 // fetched, plain-object data from the server component — it never touches
-// credentials. Every number here is real GA4 / Vercel data; nothing is invented.
+// credentials. Every number here is real GA4 data; nothing is invented.
 
 import { useEffect, useState } from "react";
 import {
@@ -46,7 +46,6 @@ const Ic = {
   pin: svg(<><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></>),
   building: svg(<><rect x="4" y="2" width="16" height="20" rx="1.5" /><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" /></>),
   ga: svg(<><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>),
-  vercel: <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 3 22 20H2Z" /></svg>,
 };
 
 /* ── shared bits ────────────────────────────────────────────────────────── */
@@ -231,15 +230,13 @@ const isoDay = (d) => d.toISOString().slice(0, 10);
 const daysAgoIso = (n) => isoDay(new Date(Date.now() - n * 86400000));
 const validIso = (s) => (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : "");
 
-export default function AnalyticsDashboard({ data: initialData, realtime: initialRealtime, vercel: initialVercel }) {
-  const [tab, setTab] = useState("ga");
+export default function AnalyticsDashboard({ data: initialData, realtime: initialRealtime }) {
   const [mounted, setMounted] = useState(false);
 
   // Live dashboard state — seeded from the server render, then updated in place
   // when the user changes the date range (client fetch to /api/analytics).
   const [data, setData] = useState(initialData);
   const [realtime, setRealtime] = useState(initialRealtime);
-  const [vercel, setVercel] = useState(initialVercel);
   const [loading, setLoading] = useState(false);
   const [rangeErr, setRangeErr] = useState(null);
   const [from, setFrom] = useState(validIso(initialData.range?.startDate));
@@ -267,7 +264,6 @@ export default function AnalyticsDashboard({ data: initialData, realtime: initia
       if (!j.ok) throw new Error(j.error || "Could not load that range.");
       setData(j);
       setRealtime(j.realtime);
-      setVercel(j.vercel);
       setFrom(start);
       setTo(end);
       setActivePreset(presetKey);
@@ -289,10 +285,6 @@ export default function AnalyticsDashboard({ data: initialData, realtime: initia
   const gaCity = (data.cities || []).map((c) => ({ label: c.city, value: c.users }));
   const gaDev = (data.devices || []).map((d) => ({ label: d.device, value: d.users }));
   const gaBro = (data.browsers || []).map((b) => ({ label: b.browser, value: b.users }));
-
-  const vcOk = vercel?.configured &&
-    (vercel.visitors != null || vercel.pageViews != null ||
-      [vercel.topPages, vercel.referrers, vercel.countries, vercel.devices, vercel.browsers, vercel.os].some((x) => x && x.length));
 
   return (
     <div className="pldash">
@@ -373,20 +365,7 @@ export default function AnalyticsDashboard({ data: initialData, realtime: initia
           </div>
         </section>
 
-        {/* ── full-width 50/50 tabs ── */}
-        <div className="tabs" role="tablist">
-          <button role="tab" aria-selected={tab === "ga"} className={"tab" + (tab === "ga" ? " on" : "")} onClick={() => setTab("ga")}>
-            <span className="tab-ic">{Ic.ga}</span>
-            <span className="tab-tx"><b>Google Analytics</b><em>Users · sessions · engagement</em></span>
-          </button>
-          <button role="tab" aria-selected={tab === "vc"} className={"tab" + (tab === "vc" ? " on" : "")} onClick={() => setTab("vc")}>
-            <span className="tab-ic tab-ic-v">{Ic.vercel}</span>
-            <span className="tab-tx"><b>Vercel Analytics</b><em>Visitors · page views · edge</em></span>
-          </button>
-        </div>
-
-        {/* ── GA panel ── */}
-        {tab === "ga" && (
+        {/* ── Google Analytics ── */}
           <div className="panel">
             <div className="kpis">
               <Kpi icon={Ic.users} label="Total users" value={nf.format(t.totalUsers)} series={daily} dataKey="users" mounted={mounted} accent />
@@ -476,61 +455,6 @@ export default function AnalyticsDashboard({ data: initialData, realtime: initia
 
             <p className="foot">Live figures from the Google Analytics 4 Data API — fetched server-side, credentials never reach the browser. Data collection began 06–07 Jul 2026. This page is <b>noindex</b>.</p>
           </div>
-        )}
-
-        {/* ── Vercel panel ── */}
-        {tab === "vc" && (
-          <div className="panel">
-            <div className="src-head">
-              <span className="src-tag">{Ic.vercel} Vercel Web Analytics</span>
-              <a className="src-link" href="https://vercel.com/nadag1885s-projects/pl-website/analytics" target="_blank" rel="noreferrer">Open in Vercel ↗</a>
-              {vercel?.range && <span className="src-range">{vercel.range.from} → {vercel.range.to}</span>}
-            </div>
-
-            {!vcOk ? (
-              <div className="notice">
-                <div className="notice-ic">{Ic.vercel}</div>
-                <div>
-                  <h3>{vercel?.configured ? "Vercel Analytics is temporarily unavailable" : "Vercel Analytics isn’t configured"}</h3>
-                  <p>
-                    {vercel?.configured
-                      ? "No data came back from the Vercel Web Analytics API for this range. This is usually transient — reload to retry, or view it directly in the Vercel dashboard. Google Analytics above remains the source of truth."
-                      : "Set VERCEL_API_TOKEN, ANALYTICS_TARGET_PROJECT_ID (and VERCEL_TEAM_ID for team projects) server-side, then redeploy."}
-                  </p>
-                  <a className="notice-cta" href="https://vercel.com/nadag1885s-projects/pl-website/analytics" target="_blank" rel="noreferrer">Open Vercel Analytics ↗</a>
-                  {vercel?.diagnostics?.length ? <div className="notice-diag mono">Detail: {vercel.diagnostics.join(" · ")}</div> : null}
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="kpis kpis-2">
-                  <Kpi icon={Ic.users} label="Visitors" value={vercel.visitors == null ? "—" : nf.format(vercel.visitors)} series={vercel.daily} dataKey="visitors" mounted={mounted} accent />
-                  <Kpi icon={Ic.eye} label="Page views" value={vercel.pageViews == null ? "—" : nf.format(vercel.pageViews)} series={vercel.daily} dataKey="pageViews" color={BLUE} mounted={mounted} />
-                </div>
-
-                {vercel.daily?.length ? (
-                  <ChartCard title="Daily traffic" sub="Visitors & page views per day" icon={Ic.active} span>
-                    <AreaTrend data={vercel.daily} id="vc" mounted={mounted} keys={[
-                      { key: "visitors", name: "Visitors", color: ACCENT },
-                      { key: "pageViews", name: "Page views", color: BLUE },
-                    ]} />
-                  </ChartCard>
-                ) : null}
-
-                <div className="grid">
-                  <ChartCard title="Top pages" sub="By page views" icon={Ic.page}><RankBars data={vercel.topPages} color={ACCENT} labelW={132} mounted={mounted} /></ChartCard>
-                  <ChartCard title="Referrers" sub="Visitors by source" icon={Ic.link}><RankBars data={vercel.referrers} color={BLUE} labelW={132} mounted={mounted} /></ChartCard>
-                  <ChartCard title="Devices" sub="Visitors by device" icon={Ic.device}><Donut data={vercel.devices} centerLabel="visitors" mounted={mounted} /></ChartCard>
-                  <ChartCard title="Operating systems" sub="Visitors by OS" icon={Ic.chip}><Donut data={vercel.os} centerLabel="visitors" mounted={mounted} /></ChartCard>
-                  <ChartCard title="Top countries" sub="Visitors by country" icon={Ic.globe}><RankBars data={vercel.countries} color={GREEN} labelW={124} mounted={mounted} /></ChartCard>
-                  <ChartCard title="Browsers" sub="Visitors by browser" icon={Ic.browser}><RankBars data={vercel.browsers} color="#a78bfa" labelW={124} mounted={mounted} /></ChartCard>
-                </div>
-
-                <p className="foot">Live figures from the official Vercel Web Analytics API (<span className="mono">/v1/query/web-analytics</span>) — fetched server-side, token never reaches the browser.</p>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -602,29 +526,10 @@ const CSS = `
 .pldash .rt-side{border:1px solid var(--line);border-radius:20px;padding:1.3rem 1.5rem;background:var(--card-bg)}
 .pldash .rt-side-h{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem}
 
-/* tabs — full width, 50/50 */
-.pldash .tabs{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:clamp(1.6rem,3.5vw,2.4rem)}
-.pldash .tab{display:flex;align-items:center;gap:1rem;text-align:left;cursor:pointer;padding:1.15rem 1.4rem;border-radius:16px;
-  border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));color:var(--dim);
-  transition:transform .18s,border-color .18s,background .18s,color .18s;font-family:inherit}
-.pldash .tab:hover{transform:translateY(-2px);border-color:var(--line2);color:var(--text)}
-.pldash .tab-ic{display:grid;place-items:center;width:2.9rem;height:2.9rem;border-radius:12px;flex:0 0 auto;
-  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--dim)}
-.pldash .tab-tx{display:flex;flex-direction:column;gap:.15rem}
-.pldash .tab-tx b{font-size:1.12rem;font-weight:700;letter-spacing:-.01em;color:var(--text)}
-.pldash .tab-tx em{font-style:normal;font-size:.78rem;color:var(--faint)}
-.pldash .tab.on{color:var(--text);border-color:rgba(232,114,42,.55);
-  background:linear-gradient(180deg,rgba(232,114,42,.16),rgba(232,114,42,.04));
-  box-shadow:0 12px 40px -14px rgba(232,114,42,.6),inset 0 1px 0 rgba(255,255,255,.06)}
-.pldash .tab.on .tab-ic{background:linear-gradient(180deg,var(--accent2),var(--accent));border-color:transparent;color:#1a0f06}
-.pldash .tab.on .tab-ic-v svg{color:#1a0f06}
-.pldash .tab.on .tab-tx em{color:#e9b48f}
-
 /* panels + cards */
 .pldash .panel{margin-top:1.4rem;animation:fade .35s var(--ease,ease)}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .pldash .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
-.pldash .kpis-2{grid-template-columns:repeat(2,minmax(220px,420px))}
 .pldash .kpi{position:relative;border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.2rem;background:var(--card-bg);overflow:hidden}
 .pldash .kpi-a{border-color:rgba(232,114,42,.35);background:linear-gradient(180deg,rgba(232,114,42,.09),rgba(255,255,255,.012))}
 .pldash .kpi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;height:2.4rem}
@@ -693,25 +598,10 @@ const CSS = `
 .pldash .tip-n{color:var(--dim)}
 .pldash .tip-r b{margin-left:auto;font-weight:700}
 
-/* vercel source header + notice */
-.pldash .src-head{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-bottom:1.2rem}
-.pldash .src-tag{display:inline-flex;align-items:center;gap:.5rem;font-weight:700;font-size:.9rem}
-.pldash .src-tag svg{color:#fff}
-.pldash .src-link{font-size:.78rem;font-weight:700;color:#fff;background:#000;border:1px solid var(--line2);border-radius:9px;padding:.4rem .8rem;text-decoration:none}
-.pldash .src-link:hover{background:#161616}
-.pldash .src-range{font-size:.78rem;color:var(--faint);margin-left:auto}
-.pldash .notice{display:flex;gap:1.2rem;align-items:flex-start;border:1px solid var(--line);border-radius:18px;padding:1.6rem 1.7rem;
-  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012))}
-.pldash .notice-ic{display:grid;place-items:center;width:3rem;height:3rem;border-radius:12px;flex:0 0 auto;background:rgba(255,255,255,.06);border:1px solid var(--line)}
-.pldash .notice-ic svg{color:#fff;width:22px;height:22px}
-.pldash .notice h3{font-size:1.1rem;font-weight:700;margin-bottom:.4rem}
-.pldash .notice p{color:var(--dim);font-size:.9rem;max-width:60ch}
-.pldash .notice-cta{display:inline-block;margin-top:.9rem;font-size:.82rem;font-weight:700;color:#fff;background:#000;border:1px solid var(--line2);border-radius:9px;padding:.5rem .9rem;text-decoration:none}
-.pldash .notice-diag{margin-top:.8rem;font-size:.74rem;color:var(--faint)}
 .pldash .foot{margin-top:1.6rem;color:var(--faint);font-size:.8rem;line-height:1.6}
 
 /* responsive */
 @media (max-width:1080px){.pldash .kpis{grid-template-columns:repeat(2,1fr)}.pldash .rt{grid-template-columns:1fr}}
 @media (max-width:820px){.pldash .grid{grid-template-columns:1fr}.pldash .donut{grid-template-columns:1fr;justify-items:center}.pldash .legend{width:100%;max-width:340px}}
-@media (max-width:560px){.pldash .kpis,.pldash .kpis-2{grid-template-columns:1fr 1fr}.pldash .tabs{grid-template-columns:1fr}.pldash .tab-tx em{display:none}}
+@media (max-width:560px){.pldash .kpis{grid-template-columns:1fr 1fr}}
 `;

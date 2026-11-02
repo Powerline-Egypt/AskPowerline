@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { getAnalytics, getRealtime } from "@/lib/ga4";
-import { getVercelAnalytics } from "@/lib/vercelAnalytics";
 import { isAuthed, isConfigured, ADMIN_COOKIE } from "@/lib/adminAuth";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 
@@ -88,19 +87,18 @@ export default async function AnalyticsAdminPage({ searchParams }) {
     return <LoginScreen error={searchParams?.error} configured={isConfigured()} />;
   }
 
-  let data = null, realtime = null, vercel = null, error = null;
+  let data = null, realtime = null, error = null;
   try {
-    // GA is the source of truth; realtime + Vercel are best-effort and must not
-    // blank the page if either hiccups.
-    [data, realtime, vercel] = await Promise.all([
+    // GA is the source of truth; realtime is best-effort and must not
+    // blank the page if it hiccups.
+    [data, realtime] = await Promise.all([
       getAnalytics(),
       getRealtime().catch(() => null),
-      getVercelAnalytics().catch(() => ({ configured: true, diagnostics: ["request failed"] })),
     ]);
   } catch (e) {
     error = e?.message || "Could not load Google Analytics data.";
   }
 
   if (error) return <ErrorScreen message={error} />;
-  return <AnalyticsDashboard data={data} realtime={realtime} vercel={vercel} />;
+  return <AnalyticsDashboard data={data} realtime={realtime} />;
 }
